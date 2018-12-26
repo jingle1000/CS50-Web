@@ -32,7 +32,15 @@
       </div>
     </nav>
   </header>
-
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in message %}
+    <div class="text-center mb-4 alert alert-{{ category }}">
+      <p class="text-muted text-center">{{ message }}</p>
+    </div>
+    {% endfor %}
+  {% endif %}
+  {% endwith %}
   {% block content %}
   {% endblock%}
 

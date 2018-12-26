@@ -1,8 +1,8 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, url_for, flash, redirect
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin
+from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
@@ -36,6 +36,8 @@ class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=4, max=16)])
     email = StringField('Email', validators=[InputRequired(), Email(message='invalid email'), Length(max=50)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
+    remember = BooleanField('Remember Me')
+
 
 
 @login_manager.user_loader
@@ -59,5 +61,10 @@ def login():
 def signup():
     form = RegisterForm()
     if form.validate_on_submit():
-        return f'<p>{form.username.data} {form.password.data} {form.email.data}</p>'
+        new_user = User(username=form.username.data, email=form.email.data, password=form.password.data)
+        db.session.add(new_user)
+        db.session.commit()
+        message = 'Account created successfully, please login!'
+        return render_template('signup.html', form=form, message=message)
+        # return f'<p>{form.username.data} {form.password.data} {form.email.data}</p>'
     return render_template('signup.html', form=form)

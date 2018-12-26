@@ -18,6 +18,12 @@
 
   <body>
     <form class="form-signin" method='POST' action="/signup">
+      {% if message %}
+      <div class="text-center mb-4 alert alert-success">
+        <p class="text-muted text-center">{{ message }}</p>
+        <p class="mt-5 mb-3 text-muted text-center"><a href="{{ url_for('login') }}">Back to Login</a></p>
+      </div>
+      {% endif %}
       <div class="text-center mb-4">
         <img class="mb-4" src="/docs/4.2/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
         <h1 class="h3 mb-3 font-weight-normal">Sign Up</h1>
