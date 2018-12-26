@@ -2,3 +2,7 @@
 __pycache__/
 
 flask_session/
+
+\.ipynb_checkpoints/
+
+*.ipynb
