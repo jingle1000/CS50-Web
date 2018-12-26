@@ -6,6 +6,7 @@ from flask_login import LoginManager, UserMixin, login_user, current_user, logou
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 app = Flask(__name__)
@@ -20,6 +21,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://cezykxbcbwguds:ce990760be163
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -38,8 +40,6 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
     remember = BooleanField('Remember Me')
 
-
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -54,17 +54,34 @@ def index():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        return f'<p>{form.username.data} {form.password.data}</p>'
+        user = User.query.filter_by(username=form.username.data).first()
+        if user:
+            if check_password_hash(user.password, form.password.data):
+                login_user(user, remember=form.remember.data)
+                return redirect(url_for('dashboard'))
+        return '<h1>Invalid username or password</h1>'
     return render_template('login.html', form=form)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     form = RegisterForm()
     if form.validate_on_submit():
-        new_user = User(username=form.username.data, email=form.email.data, password=form.password.data)
+        hashed_password = generate_password_hash(form.password.data, method='sha256')
+        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
         message = 'Account created successfully, please login!'
         return render_template('signup.html', form=form, message=message)
         # return f'<p>{form.username.data} {form.password.data} {form.email.data}</p>'
     return render_template('signup.html', form=form)
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html', name=current_user.username, dashboard=True)
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
