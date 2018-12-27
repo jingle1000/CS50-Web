@@ -11,3 +11,9 @@ class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=4, max=16)])
     email = StringField('Email', validators=[InputRequired(), Email(message='invalid email'), Length(max=50)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
+
+class SearchForm(FlaskForm):
+    isbn = StringField('')
+    title = StringField('')
+    author = StringField('')
+    year = StringField('')

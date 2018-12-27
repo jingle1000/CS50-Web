@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, url_for, flash, redirect
+from flask import Flask, render_template, url_for, flash, redirect, request
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
@@ -40,6 +40,10 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
     remember = BooleanField('Remember Me')
 
+class SearchForm(FlaskForm):
+    search = StringField('')
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -75,10 +79,18 @@ def signup():
         # return f'<p>{form.username.data} {form.password.data} {form.email.data}</p>'
     return render_template('signup.html', form=form)
 
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    return render_template('dashboard.html', name=current_user.username, dashboard=True)
+    form = SearchForm()
+    if request.method == 'POST':
+        return f'<p>{form.search.data}</p>'
+    return render_template('dashboard.html', name=current_user.username, dashboard=True, form=form)
+
+@app.route('/searchresults')
+@login_required
+def searchresults(search):
+    pass
 
 @app.route('/logout')
 @login_required
