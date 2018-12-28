@@ -7,6 +7,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_whooshee import Whooshee
 
 
 app = Flask(__name__)
@@ -18,7 +19,12 @@ if not os.getenv("DATABASE_URL"):
 
 app.config['SECRET_KEY'] = 'gs33sg34!pinndgSD45%lObN'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://cezykxbcbwguds:ce990760be16388bf589436f85c415dae80eb7680b97ce724c2efd3e363fe04e@ec2-54-235-247-209.compute-1.amazonaws.com:5432/d6pq4pd96n8bci'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
+whooshee = Whooshee(app)
+db.init_app(app)
+whooshee.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -28,6 +34,20 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(30), unique=True)
     email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(80))
+
+@whooshee.register_model('isbn', 'title', 'author', 'year')
+class Book(db.Model):
+    __searchable__ = ['isbn', 'title', 'author', 'year']
+    id = db.Column(db.Integer, primary_key=True)
+    isbn = db.Column(db.String)
+    title = db.Column(db.String)
+    author = db.Column(db.String)
+    year = db.Column(db.Integer)
+
+def add_book(atr_list):
+    toadd = Book(atr_list)
+    db.session.add(toadd)
+    db.session.commit()
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=4, max=16)])
