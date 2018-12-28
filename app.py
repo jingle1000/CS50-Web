@@ -66,7 +66,10 @@ def load_user(user_id):
 @app.route("/")
 def index():
     custom_css = '<link rel="stylesheet" href="../static/main.css">'
-    return render_template('landing.html', custom_css=custom_css)
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    else:
+        return render_template('landing.html', custom_css=custom_css)
 
 
 @app.route('/login', methods=['GET', 'POST'])
