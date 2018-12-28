@@ -7,7 +7,6 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_whooshee import Whooshee
 
 
 app = Flask(__name__)
@@ -22,9 +21,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://cezykxbcbwguds:ce990760be163
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-whooshee = Whooshee(app)
 db.init_app(app)
-whooshee.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -35,9 +32,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(80))
 
-@whooshee.register_model('isbn', 'title', 'author', 'year')
 class Book(db.Model):
-    __searchable__ = ['isbn', 'title', 'author', 'year']
     id = db.Column(db.Integer, primary_key=True)
     isbn = db.Column(db.String)
     title = db.Column(db.String)

@@ -1,2 +1,2 @@
-set FLASK_DEBUG-1
+set FLASK_DEBUG=1
 set DATABASE_URL=postgres://cezykxbcbwguds:ce990760be16388bf589436f85c415dae80eb7680b97ce724c2efd3e363fe04e@ec2-54-235-247-209.compute-1.amazonaws.com:5432/d6pq4pd96n8bci
