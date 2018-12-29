@@ -23,6 +23,13 @@
         <button class="btn btn-lg btn-primary btn-block" type="submit">Search</button>
       </div>
     </div>
+    {% if search %}
+    <div class="row">
+      <div class="result card-style">
+        <p>{{ search }}</p>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </form>
 {% endblock %}

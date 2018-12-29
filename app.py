@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, url_for, flash, redirect, request
+from flask import Flask, render_template, url_for, redirect, request, session
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
@@ -7,24 +7,31 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_session import Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 
+DATABASE = 'postgres://cezykxbcbwguds:ce990760be16388bf589436f85c415dae80eb7680b97ce724c2efd3e363fe04e@ec2-54-235-247-209.compute-1.amazonaws.com:5432/d6pq4pd96n8bci'
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
-
-# Check for environment variable
-if not os.getenv("DATABASE_URL"):
-    raise RuntimeError("DATABASE_URL is not set")
-
-app.config['SECRET_KEY'] = 'gs33sg34!pinndgSD45%lObN'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://cezykxbcbwguds:ce990760be16388bf589436f85c415dae80eb7680b97ce724c2efd3e363fe04e@ec2-54-235-247-209.compute-1.amazonaws.com:5432/d6pq4pd96n8bci'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+Session(app)
+# Check for environment variable
+if not os.getenv("DATABASE_URL"):
+    raise RuntimeError("DATABASE_URL is not set")
+
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+app.config['SECRET_KEY'] = 'gs33sg34!pinndgSD45%lObN'
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+engine = create_engine(DATABASE)
+db2 = scoped_session(sessionmaker(bind=engine))
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -66,10 +73,7 @@ def load_user(user_id):
 @app.route("/")
 def index():
     custom_css = '<link rel="stylesheet" href="../static/main.css">'
-    if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
-    else:
-        return render_template('landing.html', custom_css=custom_css)
+    return render_template('landing.html', custom_css=custom_css)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -102,7 +106,8 @@ def signup():
 def dashboard():
     form = SearchForm()
     if request.method == 'POST':
-        return f'<p>{form.search.data}</p>'
+        search = form.search.data
+        return render_template('dashboard.html', name=current_user.username, form=form, search=search)
     return render_template('dashboard.html', name=current_user.username, dashboard=True, form=form)
 
 @app.route('/searchresults')
