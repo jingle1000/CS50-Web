@@ -11,8 +11,6 @@ from flask_session import Session
 from sqlalchemy import create_engine, Column, String
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-DATABASE = 'postgres://cezykxbcbwguds:ce990760be16388bf589436f85c415dae80eb7680b97ce724c2efd3e363fe04e@ec2-54-235-247-209.compute-1.amazonaws.com:5432/d6pq4pd96n8bci'
-
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
@@ -25,13 +23,14 @@ Session(app)
 if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
 
+app.secret_key= 'gs33sg34!pifsefsefsefnndgSD45%lObN'
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-app.config['SECRET_KEY'] = 'gs33sg34!pinndgSD45%lObN'
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE
+app.config['SECRET_KEY'] = 'gs33sg34!fsfsefsefsefsefsef%lObN'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-engine = create_engine(DATABASE)
-db2 = scoped_session(sessionmaker(bind=engine))
+engine = create_engine(os.getenv("DATABASE_URL"))
+#db2 = scoped_session(sessionmaker(bind=engine))
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
